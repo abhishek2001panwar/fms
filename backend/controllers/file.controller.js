@@ -56,7 +56,6 @@ export const postFile = async (req, res) => {
 
     const hashedPasscode = await bcrypt.hash(passcode, 10);
 
-    console.log('Hashed Passcode:', hashedPasscode);
 
     try {
         // Create a new file record
@@ -108,7 +107,7 @@ export const getOneFile = async (req, res) => {
             }
 
             // Verify the passcode using bcrypt
-            const isMatch = await bcrypt.compare(passcode, file.passcode); // Assuming file.passcode is the hashed passcode
+            const isMatch = bcrypt.compare(passcode, file.passcode); // Assuming file.passcode is the hashed passcode
             
             if (!isMatch) {
                 return res.status(403).json({ message: 'Invalid passcode.' });
@@ -248,6 +247,121 @@ export const unshareFile = async (req, res) => {
     }
 };
 
+// export const encryptFile = async (req, res) => {
+//     try {
+//         const { id } = req.params; // File ID from request parameters
+//         const { passcode } = req.body; // Get passcode from request body
+
+//         if (!passcode) {
+//             return res.status(400).json({ message: 'Passcode is required' });
+//         }
+
+//         if (!mongoose.isValidObjectId(id)) {
+//             return res.status(400).json({ message: 'Invalid file ID format' });
+//         }
+
+//         const file = await File.findById(id);
+//         if (!file) {
+//             return res.status(404).json({ message: 'File not found' });
+//         }
+
+//         // Encryption logic
+//         const algorithm = 'aes-256-cbc';
+//         const key = crypto.createHash('sha256').update(passcode).digest(); // Generate key from passcode
+//         const iv = crypto.randomBytes(16); // Generate a random IV
+
+//         // Read the file
+//         const filePath = file.filepath;
+//         const fileBuffer = fs.readFileSync(filePath);
+
+//         // Create a cipher
+//         const cipher = crypto.createCipheriv(algorithm, key, iv);
+
+//         // Encrypt the file
+//         let encrypted = Buffer.concat([cipher.update(fileBuffer), cipher.final()]);
+
+//         // Define the encrypted file path
+//         const encryptedFilePath = path.join('uploads', `encrypted_${file.filename}`);
+
+//         // Write the IV and encrypted data to the file
+//         fs.writeFileSync(encryptedFilePath, Buffer.concat([iv, encrypted]));
+
+//         // Update the database record to mark the file as encrypted
+//         file.isEncrypted = true;
+//         await file.save();
+
+//         return res.status(200).json({ message: 'File encrypted successfully', encryptedFilePath });
+
+//     } catch (error) {
+//         console.error('Encryption Error:', error);
+//         return res.status(500).json({ message: 'Error encrypting file', error: error.message });
+//     }
+// };
+
+// export const decryptFile = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { passcode } = req.body;
+
+//         if (!mongoose.isValidObjectId(id)) {
+//             return res.status(400).json({ message: 'Invalid file ID format' });
+//         }
+//         if (!passcode) {
+//             return res.status(400).json({ message: 'Passcode is required' });
+//         }
+
+//         const file = await File.findById(id);
+//         if (!file || !file.isEncrypted) {
+//             return res.status(404).json({ message: 'Encrypted file not found' });
+//         }
+
+//         // Read the encrypted file
+//         const input = fs.createReadStream(file.filepath);
+//         const decryptedPath = path.join('uploads', file.filename.replace('.enc', ''));
+//         const output = fs.createWriteStream(decryptedPath);
+
+//         // Create decryption key from passcode
+//         const key = crypto.createHash('sha256').update(passcode).digest();
+
+//         let iv;
+
+//         input.on('data', (chunk) => {
+//             // Initialize IV on the first chunk
+//             if (!iv) {
+//                 iv = chunk.slice(0, 16); // The first 16 bytes are the IV
+//                 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+//                 output.write(decipher.update(chunk.slice(16))); // Skip the IV in the first chunk
+//             } else {
+//                 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+//                 output.write(decipher.update(chunk));
+//             }
+//         });
+
+//         input.on('end', async () => {
+//             output.end(); // Close the output stream
+//             file.isEncrypted = false; // Mark the file as decrypted
+//             await file.save();
+//             res.download(decryptedPath, file.filename); // Send the decrypted file to the client
+//             console.log('File decrypted successfully', decryptedPath);
+//         });
+
+//         input.on('error', (error) => {
+//             console.error('Input Stream Error:', error);
+//             res.status(500).json({ message: 'Error reading encrypted file' });
+//         });
+
+//         output.on('error', (error) => {
+//             console.error('Output Stream Error:', error);
+//             res.status(500).json({ message: 'Error writing decrypted file' });
+//         });
+
+//     } catch (error) {
+//         console.error('Decryption Error:', error);
+//         res.status(500).json({ message: 'Error decrypting file' });
+//     }
+// };
+
+
 export const encryptFile = async (req, res) => {
     try {
         const { id } = req.params; // File ID from request parameters
@@ -279,7 +393,7 @@ export const encryptFile = async (req, res) => {
         const cipher = crypto.createCipheriv(algorithm, key, iv);
 
         // Encrypt the file
-        let encrypted = Buffer.concat([cipher.update(fileBuffer), cipher.final()]);
+        const encrypted = Buffer.concat([cipher.update(fileBuffer), cipher.final()]);
 
         // Define the encrypted file path
         const encryptedFilePath = path.join('uploads', `encrypted_${file.filename}`);
@@ -316,20 +430,24 @@ export const decryptFile = async (req, res) => {
             return res.status(404).json({ message: 'Encrypted file not found' });
         }
 
-        // Read the encrypted file
-        const input = fs.createReadStream(file.filepath);
+        // Define the encrypted file path
+        const encryptedFilePath = file.filepath;
         const decryptedPath = path.join('uploads', file.filename.replace('.enc', ''));
-        const output = fs.createWriteStream(decryptedPath);
 
         // Create decryption key from passcode
         const key = crypto.createHash('sha256').update(passcode).digest();
 
-        let iv;
+        // Read the encrypted file
+        const input = fs.createReadStream(encryptedFilePath);
+        const output = fs.createWriteStream(decryptedPath);
 
+        let iv; // Initialize IV
+
+        // Handle the input stream
         input.on('data', (chunk) => {
-            // Initialize IV on the first chunk
             if (!iv) {
-                iv = chunk.slice(0, 16); // The first 16 bytes are the IV
+                // The first 16 bytes are the IV
+                iv = chunk.slice(0, 16); 
                 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
                 output.write(decipher.update(chunk.slice(16))); // Skip the IV in the first chunk
             } else {
@@ -338,7 +456,10 @@ export const decryptFile = async (req, res) => {
             }
         });
 
+        // Finalize the output stream
         input.on('end', async () => {
+            const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+            output.write(decipher.final()); // Finalize decryption
             output.end(); // Close the output stream
             file.isEncrypted = false; // Mark the file as decrypted
             await file.save();
@@ -346,11 +467,13 @@ export const decryptFile = async (req, res) => {
             console.log('File decrypted successfully', decryptedPath);
         });
 
+        // Error handling for input stream
         input.on('error', (error) => {
             console.error('Input Stream Error:', error);
             res.status(500).json({ message: 'Error reading encrypted file' });
         });
 
+        // Error handling for output stream
         output.on('error', (error) => {
             console.error('Output Stream Error:', error);
             res.status(500).json({ message: 'Error writing decrypted file' });
@@ -358,7 +481,7 @@ export const decryptFile = async (req, res) => {
 
     } catch (error) {
         console.error('Decryption Error:', error);
-        res.status(500).json({ message: 'Error decrypting file' });
+        res.status(500).json({ message: 'Error decrypting file', error: error.message });
     }
 };
 
