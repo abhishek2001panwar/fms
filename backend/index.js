@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 const app = express();
 import { router as userRouter } from "./routes/user.routes.js";
+import { router as fileRouter } from "./routes/file.routes.js";
 import { connect } from './config/config.js';
 import { fileURLToPath } from "url";
 
@@ -30,10 +31,12 @@ connect();
 //api
 
 app.use('/api/v1/user', userRouter);
+app.use('/api/v1/file', fileRouter);
 
 
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-}
+
+app.listen(process.env.PORT, () => {
+    console.log('Server is running on port' , process.env.PORT);
+  }
 );
