@@ -51,3 +51,17 @@ export const login = async (req, res) => {
         throw new Error(error);
     }
 };
+
+export const getProfile = async (req, res) => {
+    try {
+        console.log('User ID:', req.user.id); // Log the user ID
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Send a structured response
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error(error); // Log error for debugging
+        res.status(500).json({ message: 'Server error', error: error.message });  
+    }
+};

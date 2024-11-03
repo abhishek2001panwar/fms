@@ -7,9 +7,16 @@ import { router as userRouter } from "./routes/user.routes.js";
 import { router as fileRouter } from "./routes/file.routes.js";
 import { connect } from './config/config.js';
 import { fileURLToPath } from "url";
+import cors from 'cors';
 
 
 //db config
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Match the exact origin of your frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // List all the HTTP methods your app needs
+  credentials: true // Include if you’re sending cookies or auth tokens
+}));
 
 dotenv.config()
 

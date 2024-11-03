@@ -4,82 +4,126 @@ import fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
 import bcrypt from 'bcrypt';
+import { User } from '../models/user.model.js';
+import cloudinary from '../config/cloudinary.js';
+import axios from 'axios';
 
 export const getFiles = async (req, res) => {
     try {
-        const files = await File.find();
-
-        if (!files) {
-            return res.status(404).json({ message: 'No files found.' });
+        const userId = req.userId; // Access userId from the middleware
+        const files = await File.find({ userId }); // Fetch files for the user
+        if (!files || files.length === 0) {
+            return res.status(404).json({ message: 'No files found for this user' });
         }
-
-
-        return res.status(200).json({
-            message: 'Files retrieved successfully',
-            files,
-        });
+        res.status(200).json({ files });
     } catch (error) {
-        console.log(error);
-        throw new Error(error);
-
+        console.error('Error fetching files:', error);
+        res.status(500).json({ message: 'Error fetching files', error: error.message });
     }
 };
 
+// export const postFile = async (req, res) => {
+//     // Use the upload middleware
+
+
+//     // Ensure a file was uploaded
+//     if (!req.file) {
+//         return res.status(400).json({ message: 'No file uploaded.' });
+//     }
+
+//     const { title, passcode, permissions, userId, isShareable , isEncrypted} = req.body;
+
+//     // Validate required fields
+//     if (!title || !userId) {
+//         return res.status(400).json({ message: 'Title and userId are required.' });
+//     }
+
+//     // // Log the uploaded file information for debugging
+//     // console.log('Creating new File:', {
+//     //     title,
+//     //     filename: req.file.filename,
+//     //     filepath: req.file.path,
+//     //     size: req.file.size,
+//     //     type: req.file.mimetype,
+//     //     passcode: passcode || '',
+//     //     permissions: permissions ? permissions.split(',') : ['read', 'write'],
+//     //     userId,
+//     // });
+
+//     const hashedPasscode = await bcrypt.hash(passcode, 10);
+
+
+//     try {
+//         // Create a new file record
+//         const newFile = new File({
+//             title,
+//             filename: req.file.filename,
+//             filepath: req.file.path,
+//             size: req.file.size,
+//             type: req.file.mimetype,
+//             passcode: hashedPasscode,
+//             isEncrypted: isEncrypted || false,
+//             isShareable: isShareable || false,
+//             permissions: permissions ? permissions.split(',') : ['read', 'write'],
+//             userId,
+//         });
+
+//         // Save the file record to the database
+//         await newFile.save();
+//         return res.status(201).json({ message: 'File uploaded successfully.', file: newFile });
+//     } catch (error) {
+//         console.error('Database Save Error:', error);
+//         return res.status(500).json({ message: 'Failed to save file metadata.', error: error.message });
+//     }
+
+// };
 
 export const postFile = async (req, res) => {
-    // Use the upload middleware
-
-
-    // Ensure a file was uploaded
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
     }
 
-    const { title, passcode, permissions, userId, isShareable , isEncrypted} = req.body;
+    const { title, passcode, permissions, isShareable, isEncrypted } = req.body;
 
     // Validate required fields
-    if (!title || !userId) {
-        return res.status(400).json({ message: 'Title and userId are required.' });
+    if (!title) {
+        return res.status(400).json({ message: 'Title is required.' });
     }
-
-    // // Log the uploaded file information for debugging
-    // console.log('Creating new File:', {
-    //     title,
-    //     filename: req.file.filename,
-    //     filepath: req.file.path,
-    //     size: req.file.size,
-    //     type: req.file.mimetype,
-    //     passcode: passcode || '',
-    //     permissions: permissions ? permissions.split(',') : ['read', 'write'],
-    //     userId,
-    // });
 
     const hashedPasscode = await bcrypt.hash(passcode, 10);
 
-
     try {
+        // Upload the file to Cloudinary
+        const cloudinaryUpload = await cloudinary.uploader.upload(req.file.path , {
+            resource_type: 'auto', // Let Cloudinary determine the file type
+        });
+
         // Create a new file record
         const newFile = new File({
             title,
             filename: req.file.filename,
-            filepath: req.file.path,
+            filepath: cloudinaryUpload.secure_url, // Use the Cloudinary URL
             size: req.file.size,
             type: req.file.mimetype,
             passcode: hashedPasscode,
             isEncrypted: isEncrypted || false,
             isShareable: isShareable || false,
-            permissions: permissions ? permissions.split(',') : ['read', 'write'],
-            userId,
+            // Directly assign permissions array
+            permissions: Array.isArray(permissions) ? permissions : [],
+            userId: req.userId, // Use the userId from the middleware
         });
 
         // Save the file record to the database
         await newFile.save();
+
+        // Optionally, update the User document to add the new file reference
+        await User.findByIdAndUpdate(req.userId, { $push: { files: newFile._id } });
+
         return res.status(201).json({ message: 'File uploaded successfully.', file: newFile });
     } catch (error) {
-        console.error('Database Save Error:', error);
-        return res.status(500).json({ message: 'Failed to save file metadata.', error: error.message });
+        console.error('Error uploading to Cloudinary:', error);
+        return res.status(500).json({ message: 'Failed to upload file to Cloudinary.', error: error.message });
     }
-
 };
 
 export const getOneFile = async (req, res) => {
@@ -100,7 +144,7 @@ export const getOneFile = async (req, res) => {
         // Check if the file is encrypted
         if (file.isEncrypted) {
             const { passcode } = req.body; // Get passcode from request body
-            
+
             // Check if passcode is provided
             if (!passcode) {
                 return res.status(400).json({ message: 'Passcode is required to access this file.' });
@@ -108,7 +152,7 @@ export const getOneFile = async (req, res) => {
 
             // Verify the passcode using bcrypt
             const isMatch = bcrypt.compare(passcode, file.passcode); // Assuming file.passcode is the hashed passcode
-            
+
             if (!isMatch) {
                 return res.status(403).json({ message: 'Invalid passcode.' });
             }
@@ -169,6 +213,7 @@ export const updateFile = async (req, res) => {
 
     }
 }
+
 export const downloadFile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -184,18 +229,29 @@ export const downloadFile = async (req, res) => {
             return res.status(404).json({ message: 'File not found' });
         }
 
-        // Set the file headers
-        res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
-        res.setHeader('Content-Type', file.type);
+        // Check if the file path is a Cloudinary URL
+        if (file.filepath.startsWith('https://res.cloudinary.com')) {
+            // If it's a Cloudinary URL, fetch the file from Cloudinary
+            const response = await axios.get(file.filepath, { responseType: 'arraybuffer' });
 
-        // Send the file stream
-        res.download(file.filepath, file.filename);
+            // Set the file headers
+            res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
+            res.setHeader('Content-Type', file.type);
 
+            // Send the file data from Cloudinary
+            res.send(response.data);
+        } else {
+            // For local file paths, send the file stream
+            res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
+            res.setHeader('Content-Type', file.type);
+            res.download(file.filepath); // This will serve the file as a download
+        }
     } catch (error) {
         console.error('Download Error:', error);
         return res.status(500).json({ message: 'Failed to download file', error: error.message });
     }
 };
+
 export const shareFile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -211,7 +267,7 @@ export const shareFile = async (req, res) => {
         }
 
         // Create a shareable link (example)
-        const shareableLink = `${req.protocol}://${req.get('host')}/api/v1/file/download/${file._id}`;
+        const shareableLink = `${file.filepath}`; // Example shareable link
 
         return res.status(200).json({ message: 'File shared successfully', link: shareableLink });
 
@@ -447,7 +503,7 @@ export const decryptFile = async (req, res) => {
         input.on('data', (chunk) => {
             if (!iv) {
                 // The first 16 bytes are the IV
-                iv = chunk.slice(0, 16); 
+                iv = chunk.slice(0, 16);
                 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
                 output.write(decipher.update(chunk.slice(16))); // Skip the IV in the first chunk
             } else {
@@ -504,13 +560,13 @@ export const searchFiles = async (req, res) => {
             message: 'Files retrieved successfully',
             files,
         });
-      
 
-        
+
+
     } catch (error) {
         console.log(error);
         throw new Error(error);
-        
+
     }
 }
 export const addPermission = async (req, res) => {
@@ -539,7 +595,7 @@ export const addPermission = async (req, res) => {
         await file.save();
 
         return res.status(200).json({ message: 'Permissions updated successfully', permissions: file.permissions });
-        
+
     } catch (error) {
         console.error('Error adding permissions:', error);
         return res.status(500).json({ message: 'Error updating permissions', error: error.message });
@@ -572,7 +628,7 @@ export const removePermission = async (req, res) => {
         await file.save();
 
         return res.status(200).json({ message: 'Permissions removed successfully', permissions: file.permissions });
-        
+
     } catch (error) {
         console.error('Error removing permissions:', error);
         return res.status(500).json({ message: 'Error updating permissions', error: error.message });
@@ -587,7 +643,7 @@ export const removePasscode = (req, res) => {
 export const getSharedFiles = async (req, res) => {
     try {
         const files = await File.find({ isShareable: true });
-        
+
         return res.status(200).json({
             message: 'Shared files retrieved successfully.',
             files,

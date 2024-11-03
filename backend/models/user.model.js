@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -23,7 +24,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-
+    files: [{ // Changed to allow multiple files
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'File'
+    }],
     createdAt: {
         type: Date,
         default: Date.now
@@ -32,4 +36,3 @@ const userSchema = new mongoose.Schema({
 
 // Compile model from schema
 export const User = mongoose.model('User', userSchema);
-
