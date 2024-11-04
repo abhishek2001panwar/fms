@@ -3,6 +3,7 @@ import React, { useContext, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthContext } from '@/Context/AuthProvider';
+import Navbar from '../Navbar/page';
 
 const LoginPage = () => {
     const { login } = useContext(AuthContext);
@@ -32,7 +33,10 @@ const LoginPage = () => {
     };
 
     return (
+        <>
+        <Navbar/>
         <div className="flex items-center justify-center min-h-screen">
+            
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xs border border-gray-200">
                 <h2 className="text-3xl font-bold text-center text-gray-800">
                     Login to Your Account
@@ -90,6 +94,7 @@ const LoginPage = () => {
                 </p>
             </div>
         </div>
+        </>
     );
 };
 

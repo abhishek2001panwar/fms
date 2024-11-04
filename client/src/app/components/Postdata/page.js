@@ -3,6 +3,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Navbar from '../Navbar/page';
 
 const FileUpload = () => {
   const [formData, setFormData] = useState({
@@ -124,6 +125,8 @@ const FileUpload = () => {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="flex items-center justify-center min-h-screen">
       <ToastContainer /> {/* Add ToastContainer here */}
       <div className="w-full max-w-lg p-8 space-y-6 bg-white rounded-md shadow-xs border border-gray-300">
@@ -241,7 +244,7 @@ const FileUpload = () => {
             <button 
               type="submit" 
               disabled={loading} // Disable button while loading
-              className={`w-full ${loading ? 'bg-gray-400' : 'bg-indigo-700'} text-white font-semibold py-3 rounded-lg hover:bg-indigo-600 transition`}
+              className={`w-full ${loading ? 'bg-gray-400' : 'bg-black'} text-white font-semibold py-3 rounded-lg hover:bg-indigo-600 transition`}
             >
               {loading ? 'Uploading...' : 'Upload File'}
             </button>
@@ -249,6 +252,7 @@ const FileUpload = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

@@ -6,6 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation';
 import Card from '../../components/Card/page';
+import Navbar from '../Navbar/page';
 
 const Page = () => {
     const [files, setFiles] = useState([]);
@@ -80,7 +81,10 @@ const Page = () => {
     };
 
     return (
-        <div className="p-10 bg-gray-100 min-h-screen">
+        <>
+        <Navbar/>
+    
+        <div className="p-10  min-h-screen">
             <ToastContainer />
             <h1 className="text-center text-4xl font-light mb-8 text-gray-800">Files</h1>
             {files.length === 0 ? (
@@ -107,6 +111,7 @@ const Page = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

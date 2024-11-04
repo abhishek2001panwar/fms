@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useState } from 'react';
-import axios from 'axios';
-
+import axios from 'axios'; 
+import { useRouter } from 'next/navigation';
 export const AuthContext = createContext();
 
 // Set base URL for the API
@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null); // For error handling
     const [isLoggedIn, setIsLoggedIn] = useState(false); // State to manage login status
-
+    const  router   = useRouter();
     const register = async (name, email, password) => {
         setLoading(true); // Set loading state to true
         try {
@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token'); // Remove token on logout
             setUser(null); // Clear user on logout
             setIsLoggedIn(false); // Update login status
+            router.push('/')
         } catch (err) {
             console.error('Logout failed', err);
             setError(err.response?.data.message || 'Logout failed'); // Use server error message if available

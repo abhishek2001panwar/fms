@@ -6,6 +6,8 @@ import { IoBookmarksOutline } from "react-icons/io5";
 import { BsThreeDots } from "react-icons/bs";
 import { FaArrowRightToBracket } from "react-icons/fa6";
 import { MdLock } from "react-icons/md"; // Import lock icon
+import { GoCheckCircleFill } from "react-icons/go";
+import Link from 'next/link';
 
 const Card = ({ file, onDownload, onViewFile, onPasscodeChange, passcode }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +21,7 @@ const Card = ({ file, onDownload, onViewFile, onPasscodeChange, passcode }) => {
     }
 
     return (
-        <div className="bg-white shadow-md rounded-3xl p-4 sm:p-6 md:p-8 lg:p-10 h-auto w-[90%] sm:w-[500px] max-w-[500px] relative border border-gray-300">
+        <div className="bg-white shadow-md rounded-3xl p-4 sm:p-6 md:p-8 lg:p-3 h-auto w-[90%] sm:w-[500px] max-w-[500px] relative border border-gray-300">
             <div className="flex justify-between items-center">
                 <div>
                     <div className="text-green-500 gap-3 flex items-center">
@@ -27,9 +29,10 @@ const Card = ({ file, onDownload, onViewFile, onPasscodeChange, passcode }) => {
                         {file.isEncrypted ? (
                             <MdLock className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" /> // Lock icon for encrypted files
                         ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 sm:w-10 sm:h-10">
-                                <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-                            </svg> // Green tick icon for non-encrypted files
+                            <GoCheckCircleFill className="w-8 h-8 sm:w-8 sm:h-8 text-green-500" /> // Green tick icon for non-encrypted files
+                            // <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 sm:w-10 sm:h-10">
+                            //     <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                            // </svg> // Green tick icon for non-encrypted files
                         )}
                         <span className="ml-1 capitalize text-sm sm:text-base md:text-xl font-semibold text-black tracking-tight">{file.title}</span>
                     </div>
@@ -66,9 +69,17 @@ const Card = ({ file, onDownload, onViewFile, onPasscodeChange, passcode }) => {
                     />
                 </div>
             )}
-            <div className="mt-10 bg-blue-100 w-full border-t-2 p-3 sm:p-4 rounded-b-2xl">
+            {/* <div className="mt-10 bg-blue-100 w-full border-t-2 p-3 sm:p-4 rounded-b-2xl">
                 <div className="flex items-center gap-2">
-                    <FaArrowRightToBracket className="text-gray-500" /><span className="text-gray-500">View</span>
+                    <FaArrowRightToBracket className="text-gray-500" /><Link href={`/components/Material/${file._id}`} className="text-gray-500">View</Link>
+                </div>
+            </div> */}
+             <div className="mt-10 bg-blue-100 w-full border-t-2 p-3 sm:p-4 rounded-b-2xl">
+                <div className="flex items-center gap-2">
+                    <FaArrowRightToBracket className="text-gray-500" />
+                    <Link href={`/components/Material/${file._id}`} className="text-gray-500">
+                        View
+                    </Link>
                 </div>
             </div>
         </div>
