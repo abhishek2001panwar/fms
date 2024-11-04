@@ -9,8 +9,7 @@ import bcrypt from 'bcrypt';
 router.get('/', authMiddleware, getFiles);
 router.post('/post',  authMiddleware ,  upload.single('file'), postFile);
 router.get('/getOneFile/:id' , getOneFile);
- 
-
+router.get("/search/:name" , searchFiles);
 router.delete("/deleteFile/:id", deleteFile);
 router.put("/updateFile/:id", updateFile);
 router.get('/download/:id', downloadFile);
@@ -18,7 +17,6 @@ router.get('/shareFile/:id', shareFile);
 router.get('/unshareFile/:id', unshareFile);
 router.get('/encryptFile/:id', encryptFile);
 router.post('/decryptFile/:id', decryptFile);
-router.get('/search', searchFiles);
 router.get('/addPermission/:id', addPermission);
 router.get('/removePermission/:id', removePermission);
 router.get('/files/shared', getSharedFiles);

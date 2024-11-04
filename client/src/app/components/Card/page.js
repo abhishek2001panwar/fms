@@ -9,7 +9,7 @@ import { MdLock } from "react-icons/md"; // Import lock icon
 import { GoCheckCircleFill } from "react-icons/go";
 import Link from 'next/link';
 
-const Card = ({ file, onDownload, onViewFile, onPasscodeChange, passcode }) => {
+const Card = ({ file,  onDownload, onViewFile, onPasscodeChange, passcode  }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleOptions = () => {
@@ -21,10 +21,10 @@ const Card = ({ file, onDownload, onViewFile, onPasscodeChange, passcode }) => {
     }
 
     return (
-        <div className="bg-white shadow-md rounded-3xl p-4 sm:p-6 md:p-8 lg:p-3 h-auto w-[90%] sm:w-[500px] max-w-[500px] relative border border-gray-300">
+        <div   className="bg-white shadow-md rounded-3xl p-4 sm:p-6 md:p-8 lg:p-3 h-auto w-[90%] sm:w-[500px] max-w-[500px] relative border border-gray-300">
             <div className="flex justify-between items-center">
                 <div>
-                    <div className="text-green-500 gap-3 flex items-center">
+                    <div  className="text-green-500 gap-3 flex items-center">
                         {/* Conditional rendering of icons based on encryption status */}
                         {file.isEncrypted ? (
                             <MdLock className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" /> // Lock icon for encrypted files

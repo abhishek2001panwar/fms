@@ -22,6 +22,35 @@ export const getFiles = async (req, res) => {
     }
 };
 
+export const searchFiles = async (req, res) => {
+    try {
+        // Get the search term from the route parameter
+        const { name } = req.params;
+
+        // Check if the name is provided
+        if (!name) {
+            return res.status(400).json({ message: 'Search term is required' });
+        }
+
+        // Use a regular expression to search for files in a case-insensitive manner
+        const files = await File.find({ title: { $regex: name, $options: 'i' } });
+
+        // Check if any files were found
+        if (!files || files.length === 0) {
+            return res.status(404).json({ message: 'No files found' });
+        }
+
+        // Return the found files with a 200 status
+        return res.status(200).json(files);
+    } catch (error) {
+        console.error('Error occurred during file search:', error);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
+
+
 // export const postFile = async (req, res) => {
 //     // Use the upload middleware
 
@@ -541,34 +570,7 @@ export const decryptFile = async (req, res) => {
     }
 };
 
-export const searchFiles = async (req, res) => {
-    try {
-        const { query } = req.query;
 
-        if (!query) {
-            return res.status(400).json({ message: 'Search query is required' });
-        }
-
-        // Use a regular expression to search for files
-        const files = await File.find({ title: { $regex: query, $options: 'i' } });
-
-        if (!files || files.length === 0) {
-            return res.status(404).json({ message: 'No files found' });
-        }
-
-        return res.status(200).json({
-            message: 'Files retrieved successfully',
-            files,
-        });
-
-
-
-    } catch (error) {
-        console.log(error);
-        throw new Error(error);
-
-    }
-}
 export const addPermission = async (req, res) => {
     try {
         const { id } = req.params; // Get file ID from request parameters
