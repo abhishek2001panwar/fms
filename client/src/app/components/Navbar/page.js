@@ -159,6 +159,8 @@ import React from 'react';
 import Link from 'next/link';
 import { useContext, useState } from 'react';
 import { AuthContext } from '@/Context/AuthProvider';
+import { MdAttachFile } from "react-icons/md";
+
 const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const { isLoggedIn, logout } = useContext(AuthContext);
@@ -169,7 +171,10 @@ const Navbar = () => {
     return (
         <div>
             <nav className="p-5 m-3 flex justify-between items-center">
-                <Link href='/' className="text-xl font-bold">File Manager</Link>
+                <div  className='flex gap-3 items-center ' >
+                <MdAttachFile className='w-8 h-8' />
+                <Link href='/' className="text-xl font-bold"> File Manager</Link>
+                    </div>
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex md:items-center space-x-4">
