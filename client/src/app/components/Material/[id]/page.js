@@ -27,23 +27,23 @@ const FileDetail = ({ params }) => {
     }
 
     return (
-        <div className="bg-gray-100 min-h-screen flex justify-center items-center p-8">
-            <div className="bg-white p-8 flex flex-col md:flex-row rounded-lg shadow-md max-w-5xl">
+        <div className=" min-h-screen flex justify-center items-center p-8">
+            <div className="bg-white p-12 flex flex-col md:flex-row border-2 border-gray-200 rounded-lg shadow-xs max-w-5xl">
                 {/* Left side: File preview and details */}
                 <div className="md:w-1/2 flex flex-col items-center">
-                    <Image src={'https://via.placeholder.com/100x100'} alt="File Preview" width={400} height={400} className="rounded-md mb-4" />
-                    <button className="text-gray-500 mt-4 font-semibold">Rotate {file.title}</button>
-                    <div className="flex space-x-2 mt-4">
+                    <Image src={`${file.filepath}`} alt={`${file.title}`} width={400} height={400} className="rounded-md mb-4" />
+                    <button className="text-gray-500 mt-4 font-semibold">{file.title}</button>
+                    {/* <div className="flex space-x-2 mt-4">
                         <Image src="https://via.placeholder.com/100x100" alt="Preview Thumbnail 1" width={100} height={100} className="rounded-lg" />
                         <Image src="https://via.placeholder.com/100x100" alt="Preview Thumbnail 2" width={100} height={100} className="rounded-lg" />
                         <Image src="https://via.placeholder.com/100x100" alt="Preview Thumbnail 3" width={100} height={100} className="rounded-lg" />
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Right side: File details and actions */}
                 <div className="md:w-1/2 md:ml-8">
                     <p className="text-sm text-gray-500 uppercase tracking-wider mb-1">File Details</p>
-                    <h2 className="text-3xl font-bold mb-4">{file.title}</h2>
+                    <h2 className="text-3xl capitalize tracking-normal font-bold mb-4">{file.title}</h2>
                     <div className="flex items-center mb-4">
                         {file.isEncrypted ? (
                             <div className="flex items-center text-red-500">
@@ -58,36 +58,19 @@ const FileDetail = ({ params }) => {
                         )}
                     </div>
                     <p className="text-gray-600 mb-4">
-                        File Type: {file.type} <br />
-                        File Size: {file.size} <br />
-                        Uploaded on: {new Date(file.uploadDate).toLocaleDateString()} <br />
-                        {file.permissions ? (
-                            <>
-                                {file.permissions == "read" ? (
-                                    <span className="text-green-500">Read</span>
-                                ) : (
-                                    <span className="text-red-500">No Read</span>
-                                )}
-                                {file.permissions == "write" ? (
-                                    <span className="text-blue-500">, Write</span>
-                                ) : null}
-                                {file.permissions == "delete" ? (
-                                    <span className="text-orange-500">, Delete</span>
-                                ) : null}
-                            </>
-                        ) : (
-                            <span className="text-red-500">No permissions available</span>
-                        )}
-                        <br />
+                       <strong> File Type:</strong> {file.type} <br />
+                       <strong> File Size:</strong>  {file.size} <br />
+                       <strong className='mb-3'> Uploaded on:</strong> {new Date(file.uploadDate).toLocaleDateString()} <br />
+                       <strong className='capitalize'>{file.permissions.join(' ')}</strong>
 
                     </p>
-                    <div className="text-4xl font-bold text-gray-800 mb-6">Actions</div>
+                    <div className="text-2xl font-bold text-green-800 mb-6">Actions</div>
                     <div className="flex space-x-4">
-                        <button className="bg-black text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-800">Download</button>
+                        <button className="bg-black text-white font-regular py-2 px-6 rounded-lg hover:bg-gray-800">Download</button>
                         {file.isShareable && (
-                            <button className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300">Share</button>
+                            <button className="bg-gray-200 text-gray-700 font-regular py-2 px-6 rounded-lg hover:bg-gray-300">Share</button>
                         )}
-                        <button className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-300">Delete</button>
+                        <button className="bg-gray-200 text-gray-700 font-regular py-2 px-6 rounded-lg hover:bg-gray-300">Delete</button>
                     </div>
                 </div>
             </div>
