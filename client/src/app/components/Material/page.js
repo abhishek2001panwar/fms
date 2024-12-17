@@ -12,6 +12,8 @@ const Page = () => {
     const [files, setFiles] = useState([]);
     const [passcodes, setPasscodes] = useState({});
     const router = useRouter();
+    const [shareLinks, setShareLinks] = useState({}); // New state to store shared links
+
 
     useEffect(() => {
         const fetchFiles = async () => {
@@ -29,7 +31,6 @@ const Page = () => {
                 setFiles(response.data.files);
             } catch (error) {
                 console.error('Error fetching files:', error.response ? error.response.data : error.message);
-                toast.error('Failed to fetch files. Please try again later.');
             }
         };
 
@@ -42,51 +43,75 @@ const Page = () => {
             console.error('No token found, user might not be logged in.');
             return;
         }
+    
         try {
             const response = await axios.get(`http://localhost:4000/api/v1/file/download/${filename}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                responseType: 'blob',
+                responseType: 'blob', // Use blob to handle various file types
             });
-
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+    
+            // Create a URL for the downloaded blob
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
+            
+            // Create a temporary link element
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', filename);
+            link.setAttribute('download', filename); // Ensure filename includes the extension
             document.body.appendChild(link);
+    
+            // Trigger the download
             link.click();
+    
+            // Clean up the link and URL object
             link.remove();
+            window.URL.revokeObjectURL(url);
+    
             toast.success('File downloaded successfully!');
         } catch (error) {
             console.error('Error downloading file:', error.response ? error.response.data : error.message);
             toast.error('Error downloading file. Please try again.');
         }
     };
-
     const handlePasscodeChange = (id, value) => {
         setPasscodes({ ...passcodes, [id]: value });
     };
 
     const handleViewFile = (file) => {
-        const enteredPasscode = passcodes[file._id];
-
-        if (file.isEncrypted && (!enteredPasscode || enteredPasscode.trim() === '')) {
-            toast.warn('Access denied! Please enter the passcode to view this file.');
-            return;
+        if (file.isEncrypted) {
+           router.push("/components/Passcode");
         }
-
-        toast.success('Access granted! Opening file...');
         router.push(`/components/Material/${file._id}`);
+        toast.success('Access granted! Opening file...');
     };
 
+    const handleShare = async (id) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found, user might not be logged in.');
+            return;
+        }
+        try {
+            const response = await axios.get(`http://localhost:4000/api/v1/file/shareFile/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const link = response.data.link; // Assuming the backend returns the link in response.data.link
+            setShareLinks((prevLinks) => ({ ...prevLinks, [id]: link })); // Update state with the link
+        } catch (error) {
+            console.error('Error sharing file:', error.response ? error.response.data : error.message);
+            toast.error('Error sharing file. Please try again.');
+        }
+    };
     return (
         <>
         <Navbar/>
     
         <div className="p-10  min-h-screen">
             <ToastContainer />
-            <h1 className="text-center text-4xl font-light mb-8 text-gray-800">Files</h1>
+            <h1 className="text-center text-4xl font-light mb-8 text-gray-800">Files </h1>
             {files.length === 0 ? (
                 <div className="text-center">
                     <p className="text-lg text-gray-600 mb-4">No files uploaded yet.</p>
@@ -102,12 +127,16 @@ const Page = () => {
                         <Card
                             key={file._id}
                             file={file}
-                            onDownload={handleDownload}
+                            onDownload={() => handleDownload(file._id, file.filename)}  // Pass both file ID and filename
                             onViewFile={handleViewFile}
+                            shareLink={shareLinks[file._id]} // Pass the link to the Card component
+
+                            onShare={() => handleShare(file._id)}
                             onPasscodeChange={handlePasscodeChange}
                             passcode={passcodes[file._id] || ''}
                         />
                     ))}
+
                 </div>
             )}
         </div>

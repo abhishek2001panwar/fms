@@ -7,7 +7,7 @@ import { File } from '../models/file.models.js';
 
 import bcrypt from 'bcrypt';
 router.get('/', authMiddleware, getFiles);
-router.post('/post',  authMiddleware ,  upload.single('file'), postFile);
+router.post('/post',  authMiddleware ,  upload.single('filename'), postFile);
 router.get('/getOneFile/:id' , getOneFile);
 router.get("/search/:name" , searchFiles);
 router.delete("/deleteFile/:id", deleteFile);
@@ -61,6 +61,39 @@ router.post('/validate/:id', async (req, res) => {
 });
 
 
+router.post('/verify-passcode', async (req, res) => {
+    try {
+        const { fileId, passcode } = req.body;
+
+        // Validate inputs
+        if (!fileId || !passcode) {
+            return res.status(400).json({ message: 'File ID and passcode are required' });
+        }
+
+        // Find file in the database
+        const file = await File.findById(fileId);
+        if (!file) {
+            return res.status(404).json({ message: 'File not found' });
+        }
+
+        // Check if the file has a hashed passcode
+        if (!file.isEncrypted) {
+            return res.status(400).json({ message: 'This file is not encrypted' });
+        }
+
+        // Compare passcode using bcrypt
+        const isMatch = await bcrypt.compare(passcode, file.passcode);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Incorrect passcode' });
+        }
+
+        // Success: Send file ID for redirection
+        return res.status(200).json({ message: 'Passcode correct', fileId: file._id });
+    } catch (error) {
+        console.error('Error verifying passcode:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
 
 

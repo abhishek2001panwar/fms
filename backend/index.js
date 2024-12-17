@@ -5,6 +5,7 @@ import path from 'path';
 const app = express();
 import { router as userRouter } from "./routes/user.routes.js";
 import { router as fileRouter } from "./routes/file.routes.js";
+import { router as CartRouter } from "./routes/cart.routes.js";
 import { connect } from './config/config.js';
 import { fileURLToPath } from "url";
 import cors from 'cors';
@@ -39,6 +40,8 @@ connect();
 
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/file', fileRouter);
+app.use('/api/v1/cart', CartRouter);
+
 
 
 

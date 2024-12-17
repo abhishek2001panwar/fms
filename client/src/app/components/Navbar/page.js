@@ -3,6 +3,10 @@ import React, { useContext, useState } from 'react';
 import Link from 'next/link';
 import { AuthContext } from '@/Context/AuthProvider';
 import { MdAttachFile } from "react-icons/md";
+import { IoBookmarksOutline } from "react-icons/io5";
+import { IoLogOutSharp } from "react-icons/io5";
+
+
 
 const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -25,22 +29,27 @@ const Navbar = () => {
                 <div className="hidden md:flex md:items-center space-x-4">
                     {isLoggedIn ? (
                         <>
-                            <Link href="/components/Material" className="bg-white border-2 text-black px-3 py-3 rounded-full">
+                            <Link href="/components/Material" className="bg-white border-[1px] border-gray-200 text-black px-3 py-2 rounded-full">
                                 Files
                             </Link>
-                            <Link href="/components/Postdata" className="bg-black text-white px-7 py-3 rounded-full">
+                            <Link href="/components/Postdata" className="bg-black text-white px-7 py-2 rounded-full">
                                 Upload
                             </Link>
-                            <button onClick={logout} className="bg-black text-white px-3 py-3 rounded-full">
-                                Logout
+                            <Link href="/components/Cart" className="font-regular  text-black px-3 py-2 rounded-full">
+                                    <IoBookmarksOutline className="text-lg sm:text-xl" />
+                            </Link>
+                            <button onClick={logout} className="bg-black text-white px-3 py-2 rounded-full">
+                            <IoLogOutSharp />
+
                             </button>
+
                         </>
                     ) : (
                         <>
-                            <Link href="/components/Login" className="border-2 border-gray-200 text-black px-3 py-3 rounded-full">
-                                Login
+                            <Link href="/components/Login" className="border-2 font-regular border-gray-200 text-black px-3 py-2 rounded-full">
+                                Log In
                             </Link>
-                            <Link href="/components/Signup" className="bg-black text-white px-7 py-3 rounded-full">
+                            <Link href="/components/Signup" className="bg-black text-white px-7 py-2 rounded-full">
                                 Signup
                             </Link>
                         </>

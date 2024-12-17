@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { FaLock, FaUnlock } from 'react-icons/fa';
+import axios from 'axios';
 
 const FileDetail = ({ params }) => {
     const [file, setFile] = useState(null);
-    const { id } = React.use(params)
+    const [shareLink, setShareLink] = useState(null); // State to store the shareable link
+    const { id } = React.use(params);
 
     useEffect(() => {
         const fetchFile = async () => {
@@ -14,30 +16,59 @@ const FileDetail = ({ params }) => {
                 const data = await response.json();
                 console.log('File data:', data);
                 setFile(data.file);
+
+                // Automatically call handleShare if the file is shareable
+                if (data.file.isShareable) {
+                    handleShare(data.file._id);
+                }
             } catch (error) {
                 console.error('Error fetching file:', error);
+                // Optional: Display error message to the user
             }
         };
 
-        fetchFile();
+        if (id) {
+            fetchFile();
+        }
     }, [id]);
+
+    // Function to handle share action
+    const handleShare = async (id) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found, user might not be logged in.');
+            return;
+        }
+        try {
+            const response = await axios.get(`http://localhost:4000/api/v1/file/shareFile/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const link = response.data.link; // Assuming the backend returns the link in response.data.link
+            setShareLink(link); // Set the link in the state
+        } catch (error) {
+            console.error('Error sharing file:', error.response ? error.response.data : error.message);
+            // Optional: Display error message to the user
+        }
+    };
+
+    // Function to handle back action
+    const handleBack = () => {
+        window.history.back();
+    };
 
     if (!file) {
         return <p>Loading...</p>;
     }
 
     return (
-        <div className=" min-h-screen flex justify-center items-center p-8">
-            <div className="bg-white p-12 flex flex-col md:flex-row border-2 border-gray-200 rounded-lg shadow-xs max-w-5xl">
+        <div className="min-h-screen flex justify-center items-center p-8">
+            <div className="bg-white p-16 flex flex-col md:flex-row border-2 border-gray-200 rounded-lg shadow-xs w-[150vh]">
                 {/* Left side: File preview and details */}
                 <div className="md:w-1/2 flex flex-col items-center">
                     <Image src={`${file.filepath}`} alt={`${file.title}`} width={400} height={400} className="rounded-md mb-4" />
                     <button className="text-gray-500 mt-4 font-semibold">{file.title}</button>
-                    {/* <div className="flex space-x-2 mt-4">
-                        <Image src="https://via.placeholder.com/100x100" alt="Preview Thumbnail 1" width={100} height={100} className="rounded-lg" />
-                        <Image src="https://via.placeholder.com/100x100" alt="Preview Thumbnail 2" width={100} height={100} className="rounded-lg" />
-                        <Image src="https://via.placeholder.com/100x100" alt="Preview Thumbnail 3" width={100} height={100} className="rounded-lg" />
-                    </div> */}
                 </div>
 
                 {/* Right side: File details and actions */}
@@ -58,20 +89,26 @@ const FileDetail = ({ params }) => {
                         )}
                     </div>
                     <p className="text-gray-600 mb-4">
-                       <strong> File Type:</strong> {file.type} <br />
-                       <strong> File Size:</strong>  {file.size} <br />
-                       <strong className='mb-3'> Uploaded on:</strong> {new Date(file.uploadDate).toLocaleDateString()} <br />
-                       <strong className='capitalize'>{file.permissions.join(' ')}</strong>
-
+                        <strong> File Type:</strong> {file.type} <br />
+                        <strong> File Size:</strong> {file.size} <br />
+                        <strong className="mb-3"> Uploaded on:</strong> {new Date(file.uploadDate).toLocaleDateString()} <br />
+                        <strong className="capitalize">{file.permissions.join(' ')}</strong>
                     </p>
                     <div className="text-2xl font-bold text-green-800 mb-6">Actions</div>
-                    <div className="flex space-x-4">
-                        <button className="bg-black text-white font-regular py-2 px-6 rounded-lg hover:bg-gray-800">Download</button>
-                        {file.isShareable && (
-                            <button className="bg-gray-200 text-gray-700 font-regular py-2 px-6 rounded-lg hover:bg-gray-300">Share</button>
-                        )}
-                        <button className="bg-gray-200 text-gray-700 font-regular py-2 px-6 rounded-lg hover:bg-gray-300">Delete</button>
-                    </div>
+
+                    {/* Conditionally render the shareable link if available */}
+                    {shareLink && (
+                        <div className="mt-4 max-w-2xl"> {/* Adjusted width here */}
+                            <p className="text-sm text-gray-500">Shareable Link:</p>
+                            <a href={shareLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline break-all">
+                                {shareLink}
+                            </a>
+                        </div>
+                    )}
+
+                    <button className="px-5 py-2 bg-black text-white rounded-md font-regular mt-20" onClick={handleBack}>
+                        Go back
+                    </button>
                 </div>
             </div>
         </div>

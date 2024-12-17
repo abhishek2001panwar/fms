@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
             setUser(loggedInUser); // Set user data directly on login
             setIsLoggedIn(true); // Update login status
         } catch (err) {
-            console.error('Login failed', err);
+            console.error('Login failed', err.message);
             setError(err.response?.data.message || 'Login failed'); // Use server error message if available
         } finally {
             setLoading(false); // Ensure loading is set to false

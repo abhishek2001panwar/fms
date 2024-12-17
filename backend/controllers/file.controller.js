@@ -48,65 +48,6 @@ export const searchFiles = async (req, res) => {
     }
 };
 
-
-
-
-// export const postFile = async (req, res) => {
-//     // Use the upload middleware
-
-
-//     // Ensure a file was uploaded
-//     if (!req.file) {
-//         return res.status(400).json({ message: 'No file uploaded.' });
-//     }
-
-//     const { title, passcode, permissions, userId, isShareable , isEncrypted} = req.body;
-
-//     // Validate required fields
-//     if (!title || !userId) {
-//         return res.status(400).json({ message: 'Title and userId are required.' });
-//     }
-
-//     // // Log the uploaded file information for debugging
-//     // console.log('Creating new File:', {
-//     //     title,
-//     //     filename: req.file.filename,
-//     //     filepath: req.file.path,
-//     //     size: req.file.size,
-//     //     type: req.file.mimetype,
-//     //     passcode: passcode || '',
-//     //     permissions: permissions ? permissions.split(',') : ['read', 'write'],
-//     //     userId,
-//     // });
-
-//     const hashedPasscode = await bcrypt.hash(passcode, 10);
-
-
-//     try {
-//         // Create a new file record
-//         const newFile = new File({
-//             title,
-//             filename: req.file.filename,
-//             filepath: req.file.path,
-//             size: req.file.size,
-//             type: req.file.mimetype,
-//             passcode: hashedPasscode,
-//             isEncrypted: isEncrypted || false,
-//             isShareable: isShareable || false,
-//             permissions: permissions ? permissions.split(',') : ['read', 'write'],
-//             userId,
-//         });
-
-//         // Save the file record to the database
-//         await newFile.save();
-//         return res.status(201).json({ message: 'File uploaded successfully.', file: newFile });
-//     } catch (error) {
-//         console.error('Database Save Error:', error);
-//         return res.status(500).json({ message: 'Failed to save file metadata.', error: error.message });
-//     }
-
-// };
-
 export const postFile = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded.' });
@@ -123,9 +64,12 @@ export const postFile = async (req, res) => {
 
     try {
         // Upload the file to Cloudinary
-        const cloudinaryUpload = await cloudinary.uploader.upload(req.file.path , {
-            resource_type: 'auto', // Let Cloudinary determine the file type
-        });
+        const cloudinaryUpload = await cloudinary.uploader.upload(req.file.path ,
+
+            { resource_type: "raw" }
+         );
+         console.log("Cloudinary Upload Response:", cloudinaryUpload);
+
 
         // Create a new file record
         const newFile = new File({
@@ -148,12 +92,13 @@ export const postFile = async (req, res) => {
         // Optionally, update the User document to add the new file reference
         await User.findByIdAndUpdate(req.userId, { $push: { files: newFile._id } });
 
-        return res.status(201).json({ message: 'File uploaded successfully.', file: newFile });
+        return res.status(201).json({ message: 'File uploaded successfully.', file: newFile, url: cloudinaryUpload.secure_url });
     } catch (error) {
         console.error('Error uploading to Cloudinary:', error);
         return res.status(500).json({ message: 'Failed to upload file to Cloudinary.', error: error.message });
     }
 };
+
 
 export const getOneFile = async (req, res) => {
     try {
@@ -171,21 +116,21 @@ export const getOneFile = async (req, res) => {
         }
 
         // Check if the file is encrypted
-        if (file.isEncrypted) {
-            const { passcode } = req.body; // Get passcode from request body
+        // if (file.isEncrypted) {
+        //     const { passcode } = req.body; // Get passcode from request body
 
-            // Check if passcode is provided
-            if (!passcode) {
-                return res.status(400).json({ message: 'Passcode is required to access this file.' });
-            }
+        //     // Check if passcode is provided
+        //     if (!passcode) {
+        //         return res.status(400).json({ message: 'Passcode is required to access this file.' });
+        //     }
 
-            // Verify the passcode using bcrypt
-            const isMatch = bcrypt.compare(passcode, file.passcode); // Assuming file.passcode is the hashed passcode
+        //     // Verify the passcode using bcrypt
+        //     const isMatch = bcrypt.compare(passcode, file.passcode); // Assuming file.passcode is the hashed passcode
 
-            if (!isMatch) {
-                return res.status(403).json({ message: 'Invalid passcode.' });
-            }
-        }
+        //     if (!isMatch) {
+        //         return res.status(403).json({ message: 'Invalid passcode.' });
+        //     }
+        // }
 
         // If everything is valid, return the file details
         return res.status(200).json({
@@ -331,122 +276,6 @@ export const unshareFile = async (req, res) => {
         return res.status(500).json({ message: 'Error unsharing file', error: error.message });
     }
 };
-
-// export const encryptFile = async (req, res) => {
-//     try {
-//         const { id } = req.params; // File ID from request parameters
-//         const { passcode } = req.body; // Get passcode from request body
-
-//         if (!passcode) {
-//             return res.status(400).json({ message: 'Passcode is required' });
-//         }
-
-//         if (!mongoose.isValidObjectId(id)) {
-//             return res.status(400).json({ message: 'Invalid file ID format' });
-//         }
-
-//         const file = await File.findById(id);
-//         if (!file) {
-//             return res.status(404).json({ message: 'File not found' });
-//         }
-
-//         // Encryption logic
-//         const algorithm = 'aes-256-cbc';
-//         const key = crypto.createHash('sha256').update(passcode).digest(); // Generate key from passcode
-//         const iv = crypto.randomBytes(16); // Generate a random IV
-
-//         // Read the file
-//         const filePath = file.filepath;
-//         const fileBuffer = fs.readFileSync(filePath);
-
-//         // Create a cipher
-//         const cipher = crypto.createCipheriv(algorithm, key, iv);
-
-//         // Encrypt the file
-//         let encrypted = Buffer.concat([cipher.update(fileBuffer), cipher.final()]);
-
-//         // Define the encrypted file path
-//         const encryptedFilePath = path.join('uploads', `encrypted_${file.filename}`);
-
-//         // Write the IV and encrypted data to the file
-//         fs.writeFileSync(encryptedFilePath, Buffer.concat([iv, encrypted]));
-
-//         // Update the database record to mark the file as encrypted
-//         file.isEncrypted = true;
-//         await file.save();
-
-//         return res.status(200).json({ message: 'File encrypted successfully', encryptedFilePath });
-
-//     } catch (error) {
-//         console.error('Encryption Error:', error);
-//         return res.status(500).json({ message: 'Error encrypting file', error: error.message });
-//     }
-// };
-
-// export const decryptFile = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { passcode } = req.body;
-
-//         if (!mongoose.isValidObjectId(id)) {
-//             return res.status(400).json({ message: 'Invalid file ID format' });
-//         }
-//         if (!passcode) {
-//             return res.status(400).json({ message: 'Passcode is required' });
-//         }
-
-//         const file = await File.findById(id);
-//         if (!file || !file.isEncrypted) {
-//             return res.status(404).json({ message: 'Encrypted file not found' });
-//         }
-
-//         // Read the encrypted file
-//         const input = fs.createReadStream(file.filepath);
-//         const decryptedPath = path.join('uploads', file.filename.replace('.enc', ''));
-//         const output = fs.createWriteStream(decryptedPath);
-
-//         // Create decryption key from passcode
-//         const key = crypto.createHash('sha256').update(passcode).digest();
-
-//         let iv;
-
-//         input.on('data', (chunk) => {
-//             // Initialize IV on the first chunk
-//             if (!iv) {
-//                 iv = chunk.slice(0, 16); // The first 16 bytes are the IV
-//                 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-//                 output.write(decipher.update(chunk.slice(16))); // Skip the IV in the first chunk
-//             } else {
-//                 const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-//                 output.write(decipher.update(chunk));
-//             }
-//         });
-
-//         input.on('end', async () => {
-//             output.end(); // Close the output stream
-//             file.isEncrypted = false; // Mark the file as decrypted
-//             await file.save();
-//             res.download(decryptedPath, file.filename); // Send the decrypted file to the client
-//             console.log('File decrypted successfully', decryptedPath);
-//         });
-
-//         input.on('error', (error) => {
-//             console.error('Input Stream Error:', error);
-//             res.status(500).json({ message: 'Error reading encrypted file' });
-//         });
-
-//         output.on('error', (error) => {
-//             console.error('Output Stream Error:', error);
-//             res.status(500).json({ message: 'Error writing decrypted file' });
-//         });
-
-//     } catch (error) {
-//         console.error('Decryption Error:', error);
-//         res.status(500).json({ message: 'Error decrypting file' });
-//     }
-// };
-
-
 export const encryptFile = async (req, res) => {
     try {
         const { id } = req.params; // File ID from request parameters
@@ -569,8 +398,6 @@ export const decryptFile = async (req, res) => {
         res.status(500).json({ message: 'Error decrypting file', error: error.message });
     }
 };
-
-
 export const addPermission = async (req, res) => {
     try {
         const { id } = req.params; // Get file ID from request parameters

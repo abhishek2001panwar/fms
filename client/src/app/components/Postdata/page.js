@@ -28,13 +28,6 @@ const FileUpload = () => {
 
     if (type === 'file') {
       const selectedFile = files[0];
-
-      // File type validation (only PDF allowed in this case)
-      if (selectedFile && selectedFile.type !== 'application/pdf') {
-        toast.error('Only PDF files are allowed.');
-        return;
-      }
-
       setFormData({
         ...formData,
         filename: selectedFile,
@@ -70,7 +63,7 @@ const FileUpload = () => {
     const data = new FormData();
 
     data.append('title', formData.title);
-    data.append('file', formData.filename);
+    data.append('filename', formData.filename);
     data.append('passcode', formData.passcode);
     data.append('isEncrypted', formData.isEncrypted);
     data.append('isShareable', formData.isShareable);

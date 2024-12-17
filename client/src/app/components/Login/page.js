@@ -3,7 +3,6 @@ import React, { useContext, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthContext } from '@/Context/AuthProvider';
-import Navbar from '../Navbar/page';
 
 const LoginPage = () => {
     const { login } = useContext(AuthContext);
@@ -12,6 +11,7 @@ const LoginPage = () => {
         password: '',
     });
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleChange = (e) => {
@@ -26,6 +26,7 @@ const LoginPage = () => {
         e.preventDefault();
         try {
             await login(formData); // Pass the whole formData object
+            setLoading(true);
             router.push('/components/Material'); // Redirect after login
         } catch (error) {
             setError(error.response?.data?.message || 'Login failed.');
@@ -34,7 +35,6 @@ const LoginPage = () => {
 
     return (
         <>
-        <Navbar/>
         <div className="flex items-center justify-center min-h-screen">
             
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-xs border border-gray-200">
@@ -76,10 +76,14 @@ const LoginPage = () => {
                     {/* Submit Button */}
                     <div>
                         <button
+                            disabled={loading}
+                        
                             type="submit"
                             className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-gray-800 transition"
                         >
-                            Log In
+                           {
+                            loading ? 'Processing...' : 'Login'
+                           }
                         </button>
                     </div>
                 </form>
