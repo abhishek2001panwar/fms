@@ -29,7 +29,7 @@ const Navbar = () => {
                 <div className="hidden md:flex md:items-center space-x-4">
                     {isLoggedIn ? (
                         <>
-                            <Link href="/components/Material" className="bg-white border-[1px] border-gray-200 text-black px-3 py-2 rounded-full">
+                            <Link href="/components/Material" className="bg-white shadow-xs border-[1px] border-gray-200 text-black px-3 py-2 rounded-full">
                                 Files
                             </Link>
                             <Link href="/components/Postdata" className="bg-black text-white px-7 py-2 rounded-full">

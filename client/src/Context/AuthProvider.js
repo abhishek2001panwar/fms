@@ -1,67 +1,111 @@
 'use client';
-import React, { createContext, useState } from 'react';
-import axios from 'axios'; 
+import React, { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
+
 export const AuthContext = createContext();
 
 // Set base URL for the API
 const API_BASE_URL = 'http://localhost:4000/api/v1/user';
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); // For error handling
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // State to manage login status
-    const  router   = useRouter();
+    const [user, setUser] = useState(null); // User object
+    const [authLoading, setAuthLoading] = useState(true); // Global loading state for authentication
+    const [actionLoading, setActionLoading] = useState(false); // Loading state for actions like login/register/logout
+    const [error, setError] = useState(null); // Error handling state
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Tracks login status
+    const router = useRouter();
+
+    // Persist Authentication State on Refresh
+    useEffect(() => {
+        const checkAuthStatus = async () => {
+            const token = localStorage.getItem('token'); // Check token in localStorage (if used)
+            if (token) {
+                try {
+                    const response = await axios.get(`${API_BASE_URL}/auth-status`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                        withCredentials: true, // Use if cookies are sent
+                    });
+                    setUser(response.data.user); // Set user if token is valid
+                    setIsLoggedIn(true); // Mark user as logged in
+                } catch (err) {
+                    console.error('Failed to verify token:', err);
+                    localStorage.removeItem('token'); // Remove invalid token
+                    setIsLoggedIn(false);
+                    setUser(null);
+                }
+            } else {
+                setIsLoggedIn(false); // No token, set login status to false
+            }
+            setAuthLoading(false); // Finish loading after state is updated
+        };
+
+        checkAuthStatus();
+    }, []);
+
+    // Registration Function
     const register = async (name, email, password) => {
-        setLoading(true); // Set loading state to true
+        setActionLoading(true);
         try {
             const response = await axios.post(`${API_BASE_URL}/register`, { name, email, password });
-            setUser(response.data.user); // Set user after registration
-            localStorage.setItem('token', response.data.token); // Store token if returned
-            setIsLoggedIn(true); // Update login status
+            setUser(response.data.user); // Set user data
+            localStorage.setItem('token', response.data.token); // Store token in localStorage
+            setIsLoggedIn(true);
         } catch (err) {
             console.error('Registration failed', err);
-            setError(err.response?.data.message || 'Registration failed'); // Use server error message if available
+            setError(err.response?.data.message || 'Registration failed');
         } finally {
-            setLoading(false); // Ensure loading is set to false
+            setActionLoading(false);
         }
     };
 
+    // Login Function
     const login = async (credentials) => {
-        setLoading(true); // Set loading state to true
+        setActionLoading(true);
         try {
             const response = await axios.post(`${API_BASE_URL}/login`, credentials, { withCredentials: true });
-            const { token, user: loggedInUser } = response.data; // Rename user to loggedInUser for clarity
-            localStorage.setItem('token', token); // Store token
-            setUser(loggedInUser); // Set user data directly on login
-            setIsLoggedIn(true); // Update login status
+            const { token, user: loggedInUser } = response.data;
+            localStorage.setItem('token', token); // Store token in localStorage
+            setUser(loggedInUser); // Set user data
+            setIsLoggedIn(true); // Update login state
         } catch (err) {
             console.error('Login failed', err.message);
-            setError(err.response?.data.message || 'Login failed'); // Use server error message if available
+            setError(err.response?.data.message || 'Login failed');
         } finally {
-            setLoading(false); // Ensure loading is set to false
+            setActionLoading(false);
         }
     };
 
+    // Logout Function
     const logout = async () => {
-        setLoading(true); // Set loading state to true
+        setActionLoading(true);
         try {
             await axios.get(`${API_BASE_URL}/logout`, { withCredentials: true });
             localStorage.removeItem('token'); // Remove token on logout
-            setUser(null); // Clear user on logout
-            setIsLoggedIn(false); // Update login status
-            router.push('/')
+            setUser(null); // Clear user state
+            setIsLoggedIn(false); // Update login state
+            await router.push('/'); // Ensure redirection happens after logout
         } catch (err) {
             console.error('Logout failed', err);
-            setError(err.response?.data.message || 'Logout failed'); // Use server error message if available
+            setError(err.response?.data.message || 'Logout failed');
         } finally {
-            setLoading(false); // Ensure loading is set to false
+            setActionLoading(false);
         }
     };
 
+    // Provide Auth Context
     return (
-        <AuthContext.Provider value={{ user, loading, error, isLoggedIn, register, login, logout }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                loading: authLoading || actionLoading, // Combine both loading states
+                error,
+                isLoggedIn,
+                register,
+                login,
+                logout,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

@@ -83,6 +83,35 @@ const Card = ({ file, onDownload, onShare, shareLink, onPasscodeChange, passcode
         }
     };
 
+    const handleRemove = async () => {
+        try {
+            console.log('Deleting file:', file._id);
+            const token = localStorage.getItem('token');
+    
+            const response = await fetch(`http://localhost:4000/api/v1/file/deleteFile/${file._id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            const result = await response.json();
+            if (response.ok && result.success) {
+                console.log('File deleted successfully:', file._id);
+                if (onFileDeleted) {
+                    onFileDeleted(file._id); // Call the parent callback
+                }
+            } else {
+                console.error('Error deleting file:', result.message);
+            }
+        } catch (error) {
+            console.error('Error during deletion:', error);
+        }
+    };
+    
+    
+    
 
     if (!file || !file.title) {
         return null;
@@ -109,7 +138,9 @@ const Card = ({ file, onDownload, onShare, shareLink, onPasscodeChange, passcode
                     <div className="flex items-center mt-6 sm:mt-10 space-x-3">
                         <button onClick={() => handleCart(file._id)}><IoBookmarksOutline className="text-lg sm:text-xl" /></button>
                         <IoSettings className="text-lg sm:text-xl" />
-                        <AiFillDelete className="text-lg sm:text-xl" />
+                        <button onClick={()=> handleRemove(file._id)} >
+                        <AiFillDelete  className="text-lg sm:text-xl" />
+                            </button>
                         {/* {
                             file.isEncrypted ? (
                                 <HiLockOpen className="text-lg sm:text-xl" onClick={toggleVal} />

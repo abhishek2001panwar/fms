@@ -7,7 +7,7 @@ export function middleware(request) {
 
     if (!isPathPublic && !token) {
         // Redirect to login if accessing a protected route without a token
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/components/Login', request.url));
     }
     
     if (isPathPublic && token) {
@@ -21,11 +21,10 @@ export function middleware(request) {
 
 export const config = {
     matcher: [
-        '/login',
-        '/signup',
-        '/profile',
-        // You can include other pages here, like `/dashboard`, `/settings`, etc.
-        '/dashboard',
-        '/settings',
+        '/components/Postdata',
+        '/components/Material',
+        '/components/Material/[id]',
+        '/components/Cart',
+        '/components/Card',
     ],
 };

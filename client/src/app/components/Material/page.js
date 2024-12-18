@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation';
 import Card from '../../components/Card/page';
 import Navbar from '../Navbar/page';
+import { FaFileUpload } from 'react-icons/fa';
 
 const Page = () => {
     const [files, setFiles] = useState([]);
@@ -105,22 +106,31 @@ const Page = () => {
             toast.error('Error sharing file. Please try again.');
         }
     };
+    const handleFileDeleted = (fileId) => {
+        console.log('Previous files:', files); // Log current state
+        const updatedFiles = files.filter((file) => file._id !== fileId);
+        console.log('Updated files:', updatedFiles); // Log updated state
+        setFiles(updatedFiles);
+    };
+    
     return (
         <>
         <Navbar/>
     
         <div className="p-10  min-h-screen">
             <ToastContainer />
-            <h1 className="text-center text-4xl font-light mb-8 text-gray-800">Files </h1>
+            <h1 className="text-center text-4xl font-light mb-8 text-gray-800">{files.length === 0 ? " " : "Files"} </h1>
             {files.length === 0 ? (
-                <div className="text-center">
-                    <p className="text-lg text-gray-600 mb-4">No files uploaded yet.</p>
-                    <Link href="/components/Postdata">
-                        <button className="px-4 py-2 bg-indigo-700 text-white rounded-full hover:bg-indigo-600 transition">
-                            Upload File
-                        </button>
-                    </Link>
-                </div>
+                <div className="flex flex-col items-center justify-center p-6 rounded-lg space-y-6">
+                <FaFileUpload className="text-gray-500 text-6xl" />
+                <p className="text-lg text-gray-600 mb-4">No files uploaded yet.</p>
+                <Link href="/components/Postdata">
+                    <button className="flex items-center space-x-2 px-6 py-3 bg-indigo-700 text-white rounded-full hover:bg-indigo-600 transition">
+                        <FaFileUpload className="text-white text-xl" />
+                        <span>Upload File</span>
+                    </button>
+                </Link>
+            </div>
             ) : (
                 <div className="flex flex-wrap justify-center gap-10">
                     {files.map((file) => (
@@ -130,7 +140,7 @@ const Page = () => {
                             onDownload={() => handleDownload(file._id, file.filename)}  // Pass both file ID and filename
                             onViewFile={handleViewFile}
                             shareLink={shareLinks[file._id]} // Pass the link to the Card component
-
+                            onFileDeleted={handleFileDeleted} // Pass the prop
                             onShare={() => handleShare(file._id)}
                             onPasscodeChange={handlePasscodeChange}
                             passcode={passcodes[file._id] || ''}

@@ -6,6 +6,9 @@ const router = express.Router();
 
 
 router.post('/register',  register );
+router.get('/auth-status' , authMiddleware, (req, res) => {
+    res.json({ message: 'User is authenticated' });
+});
 router.post('/login',  login );
 router.get('/logout', (req, res) => {
     res.clearCookie('token').json({ message: 'Logged out successfully' });
