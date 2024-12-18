@@ -146,7 +146,6 @@ const Page = () => {
                             passcode={passcodes[file._id] || ''}
                         />
                     ))}
-
                 </div>
             )}
         </div>
