@@ -44,7 +44,14 @@ app.use('/api/v1/cart', CartRouter);
 
 
 
+app.use(express.static(path.join(__dirname, "/client/.next")));
 
+
+//production
+
+app.get("*", (req, res) =>
+  res.sendFile(path.join(__dirname, "/client/.next"))
+);
 
 app.listen(process.env.PORT, () => {
     console.log('Server is running on port' , process.env.PORT);
