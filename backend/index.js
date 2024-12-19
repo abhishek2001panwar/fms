@@ -13,8 +13,12 @@ import cors from 'cors';
 
 //db config
 
-app.use(cors());
+const corsOptions = {
+  origin: 'https://fms-1.onrender.com', // Your frontend's URL
+  credentials: true, // Allow cookies and other credentials
+};
 
+app.use(cors(corsOptions));
 dotenv.config()
 
 
