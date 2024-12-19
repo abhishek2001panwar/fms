@@ -14,8 +14,8 @@ import cors from 'cors';
 //db config
 
 const corsOptions = {
-  origin: 'https://fms-1.onrender.com', // Your frontend's URL
-  credentials: true, // Allow cookies and other credentials
+  origin: ['http://localhost:3000', 'https://fms-1.onrender.com'],
+    credentials: true, // Allow cookies and other credentials
 };
 
 app.use(cors(corsOptions));
