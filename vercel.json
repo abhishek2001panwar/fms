@@ -1,24 +1,22 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "client/package.json",
-        "use": "@vercel/next"
-      },
-      {
-        "src": "backend/api/**/*.js",
-        "use": "@vercel/node"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/api/(.*)",
-        "dest": "/backend/api/$1"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/client/$1"
-      }
-    ]
-  }
-  
+  "projects": [
+    {
+      "name": "frontend",
+      "path": "client"
+    },
+    {
+      "name": "backend",
+      "path": "backend"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "client/$1"
+    }
+  ]
+}
