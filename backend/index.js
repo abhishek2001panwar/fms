@@ -14,7 +14,7 @@ import cors from 'cors';
 //db config
 
 app.use(cors({
-  origin: 'https://fms-1.onrender.com/', // Match the exact origin of your frontend
+  origin: 'https://fms-1.onrender.com', // Match the exact origin of your frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // List all the HTTP methods your app needs
   credentials: true // Include if you’re sending cookies or auth tokens
 }));
