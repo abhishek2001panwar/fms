@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation';
 export const AuthContext = createContext();
 
 // Set base URL for the API
-const API_BASE_URL = 'http://localhost:4000/api/v1/user';
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}api/v1/user`;
+console.log("API URL:", API_BASE_URL); // Logs: https://your-backend.onrender.com
+
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null); // User object

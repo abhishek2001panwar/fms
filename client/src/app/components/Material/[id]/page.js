@@ -12,7 +12,7 @@ const FileDetail = ({ params }) => {
     useEffect(() => {
         const fetchFile = async () => {
             try {
-                const response = await fetch(`http://localhost:4000/api/v1/file/getOneFile/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file/getOneFile/${id}`);
                 const data = await response.json();
                 console.log('File data:', data);
                 setFile(data.file);
@@ -40,7 +40,7 @@ const FileDetail = ({ params }) => {
             return;
         }
         try {
-            const response = await axios.get(`http://localhost:4000/api/v1/file/shareFile/${id}`, {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file/shareFile/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

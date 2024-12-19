@@ -33,7 +33,7 @@ const Card = ({ file, onDownload, onShare, shareLink, onPasscodeChange, passcode
         try {
 
             const token = localStorage.getItem('token');
-            const response = await axios.post('http://localhost:4000/api/v1/cart/add',
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}api/v1/cart/add`,
                 { fileId: id }, // Use the correct property name
 
                 {
@@ -88,7 +88,7 @@ const Card = ({ file, onDownload, onShare, shareLink, onPasscodeChange, passcode
             console.log('Deleting file:', file._id);
             const token = localStorage.getItem('token');
     
-            const response = await fetch(`http://localhost:4000/api/v1/file/deleteFile/${file._id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file/deleteFile/${file._id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

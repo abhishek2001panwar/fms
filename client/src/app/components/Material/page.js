@@ -24,7 +24,7 @@ const Page = () => {
                 return;
             }
             try {
-                const response = await axios.get('http://localhost:4000/api/v1/file', {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -46,7 +46,7 @@ const Page = () => {
         }
     
         try {
-            const response = await axios.get(`http://localhost:4000/api/v1/file/download/${filename}`, {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file/download/${filename}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -94,7 +94,7 @@ const Page = () => {
             return;
         }
         try {
-            const response = await axios.get(`http://localhost:4000/api/v1/file/shareFile/${id}`, {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file/shareFile/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

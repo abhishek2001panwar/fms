@@ -78,7 +78,7 @@ const FileUpload = () => {
     try {
       const token = localStorage.getItem('token');
       setLoading(true); // Start loading
-      const response = await axios.post('http://localhost:4000/api/v1/file/post', data, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}api/v1/file/post`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
