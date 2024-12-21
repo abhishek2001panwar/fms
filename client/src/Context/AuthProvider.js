@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         setActionLoading(true);
         try {
-            await axios.get(`${API_BASE_URL}/logout`, { withCredentials: true });
+            await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/logout`, { withCredentials: true });
             localStorage.removeItem('token'); // Remove token on logout
             setUser(null); // Clear user state
             setIsLoggedIn(false); // Update login state

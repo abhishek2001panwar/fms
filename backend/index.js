@@ -15,7 +15,7 @@ import cors from 'cors';
 
 app.use(
   cors({
-    origin: ['https://fms-2-8m2l.onrender.com' , "http://localhost:3000"],// Frontend URL
+    origin: "https://fms-2-8m2l.onrender.com" ,// Frontend URL
     credentials: true, // Allow credentials (cookies)
   })
 );
