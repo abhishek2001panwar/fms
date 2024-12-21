@@ -70,6 +70,7 @@ export const AuthProvider = ({ children }) => {
             setUser(loggedInUser); // Set user data
             setIsLoggedIn(true); // Update login state
         } catch (err) {
+            console.error('Login failed', err.response?.data, err.message);
             console.error('Login failed', err.message);
             setError(err.response?.data.message || 'Login failed');
         } finally {
