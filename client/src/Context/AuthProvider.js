@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 export const AuthContext = createContext();
 
 // Set base URL for the API
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}api/v1/user`;
 
 
 export const AuthProvider = ({ children }) => {
@@ -23,7 +22,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem('token'); // Check token in localStorage (if used)
             if (token) {
                 try {
-                    const response = await axios.get(`${API_BASE_URL}/auth-status`, {
+                    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/user/auth-status`, {
                         headers: { Authorization: `Bearer ${token}` },
                         withCredentials: true, // Use if cookies are sent
                     });
@@ -48,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     const register = async (name, email, password) => {
         setActionLoading(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/register`, { name, email, password });
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}api/v1/user/register`, { name, email, password });
             setUser(response.data.user); // Set user data
             localStorage.setItem('token', response.data.token); // Store token in localStorage
             setIsLoggedIn(true);
@@ -64,7 +63,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (credentials) => {
         setActionLoading(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/login`, credentials, { withCredentials: true });
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}api/v1/user/login`, credentials, { withCredentials: true });
             const { token, user: loggedInUser } = response.data;
             localStorage.setItem('token', token); // Store token in localStorage
             setUser(loggedInUser); // Set user data
