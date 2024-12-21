@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}api/v1/user/register`, { name, email, password });
             setUser(response.data.user); // Set user data
+            
             localStorage.setItem('token', response.data.token); // Store token in localStorage
             setIsLoggedIn(true);
         } catch (err) {
