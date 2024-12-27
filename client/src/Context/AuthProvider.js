@@ -82,13 +82,14 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         setActionLoading(true);
         try {
-            await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/logout`, { withCredentials: true });
+            await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/user/logout`, { withCredentials: true });
             localStorage.removeItem('token'); // Remove token on logout
             setUser(null); // Clear user state
             setIsLoggedIn(false); // Update login state
             await router.push('/'); // Ensure redirection happens after logout
         } catch (err) {
             console.error('Logout failed', err);
+            console.log('Logout failed', err);
             setError(err.response?.data.message || 'Logout failed');
         } finally {
             setActionLoading(false);

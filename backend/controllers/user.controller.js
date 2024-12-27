@@ -1,6 +1,8 @@
 import { User } from "../models/user.model.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+
+// Register a new user
 export const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -15,13 +17,15 @@ export const register = async (req, res) => {
         // Save new user
         user = new User({ name, email, password: hashedPassword });
         await user.save();
-        res.status(201).json({ message: 'User registered successfully' , user });
+
+        res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' , error });
-        throw new Error(error);
+        console.error('Error in register:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
+// Login user
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -36,33 +40,33 @@ export const login = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN
+            expiresIn: process.env.JWT_EXPIRES_IN,
         });
 
-        // Set the JWT token in an HTTP-only cookie
+        // Set token in cookies
         res.cookie('token', token, {
-            httpOnly: true, // Prevents JavaScript access to cookies
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         });
 
-
-        res.json({ message: 'Logged in successfully' , token , user });
+        const userWithoutPassword = await User.findById(user._id).select('-password');
+        res.json({ message: 'Logged in successfully', user: userWithoutPassword });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-        throw new Error(error);
+        console.error('Error in login:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
+// Get user profile
 export const getProfile = async (req, res) => {
     try {
-        console.log('User ID:', req.user.id); // Log the user ID
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.userId).select('-password');
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        // Send a structured response
         res.json({ success: true, user });
     } catch (error) {
-        console.error(error); // Log error for debugging
-        res.status(500).json({ message: 'Server error', error: error.message });  
+        console.error('Error in getProfile:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
-
