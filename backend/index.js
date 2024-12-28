@@ -15,7 +15,7 @@ import cors from 'cors';
 
 app.use(
   cors({
-    origin:  "https://fms-2-8m2l.onrender.com" ,// Frontend URL
+    origin: "https://fms-2-8m2l.onrender.com",// Frontend URL
 
     credentials: true, // Allow credentials (cookies)
   })
@@ -46,6 +46,6 @@ app.use('/api/v1/cart', CartRouter);
 
 
 app.listen(process.env.PORT, () => {
-    console.log('Server is running on port' , process.env.PORT);
-  }
+  console.log('Server is running on port', process.env.PORT);
+}
 );
