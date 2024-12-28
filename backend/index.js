@@ -16,7 +16,6 @@ import cors from 'cors';
 app.use(
   cors({
     origin: "https://fms-9fi6.vercel.app",// Frontend URL
-
     credentials: true, // Allow credentials (cookies)
   })
 );
